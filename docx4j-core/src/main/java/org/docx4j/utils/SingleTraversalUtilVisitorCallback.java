@@ -31,16 +31,15 @@ public class SingleTraversalUtilVisitorCallback extends AbstractTraversalUtilVis
 	
 	@Override
 	protected List<Object> apply(Object child, Object parent, List siblings) {
-		
 		if (visitorClass==null) {			
 			log.warn("visitorClass==null for some element with parent " + parent.getClass().getName() );
 			//log.warn(XmlUtils.marshaltoString(parent));
 		} else if (child==null) {
-            if(log.isWarnEnabled()) {
-                log.warn("child==null for some element with parent " + parent.getClass().getName());
-                // eg <w:t/>
-                log.warn(XmlUtils.marshaltoString(parent));
-            }
+		    if(log.isWarnEnabled()) {
+		        log.warn("child==null for some element with parent " + parent.getClass().getName());
+		        // eg <w:t/>
+		        log.warn(XmlUtils.marshaltoString(parent));
+		    }
 		} else if (visitorClass.isAssignableFrom(child.getClass())) {
 			visitor.apply(child, parent, siblings);
 		}

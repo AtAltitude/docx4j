@@ -83,20 +83,52 @@ public class FieldsCombiner {
 		}	
 
 		protected void processContent(List<Object> pContent) {
-		List<Object> pResult = null;
-		boolean haveChanges = false;
-		boolean inField = false;
-		Object item = null;
-		STFldCharType fldCharType = null;
-		int level = 0;
-		int state = STATE_EXPECT_BEGIN;
-		int markIdx = 0;
-		List<Object> resultList = new ArrayList<Object>(2);
-		StringBuilder instrTextBuffer = new StringBuilder(128);
-		String tmpInstrText = null;
+			List<Object> pResult = null;
+			boolean haveChanges = false;
+			boolean inField = false;
+			Object item = null;
+			STFldCharType fldCharType = null;
+			int level = 0;
+			int state = STATE_EXPECT_BEGIN;
+			int markIdx = 0;
+			List<Object> resultList = new ArrayList<Object>(2);
+			StringBuilder instrTextBuffer = new StringBuilder(128);
+			String tmpInstrText = null;
 		
 			if ((pContent != null) && (!pContent.isEmpty())) {
 				pResult = new ArrayList<Object>(pContent.size());
+				
+				//Split instrText objects off into their own Run objects - Word allows multiple instrText
+				//and FldChar objects per run, and Docx4J sometimes serializes documents like this with no 
+				//intervention from the project using the library...
+				//This doesn't break Word documents, but does break the PDF conversion in some cases, so 
+				//this is fixed here.
+				final ArrayList<Object> newPContent = new ArrayList<>();
+				for (int i = 0; i < pContent.size(); i++) {
+					item = pContent.get(i);
+					
+					if (item instanceof R) {
+						final R run = (R)item;
+						final List<Object> content = run.getContent();
+						
+						for (int j = 0; j < content.size(); j++) {
+							final Object obj = content.get(j);
+							
+							final R runOut = XmlUtils.deepCopy(run);
+							runOut.getContent().clear();
+							runOut.getContent().add(obj);
+							
+							newPContent.add(runOut);
+						}
+					} else {
+						newPContent.add(item);
+					}
+				}
+				
+				pContent.clear();
+				pContent.addAll(newPContent);
+				
+				//Process content
 				for (int i=0; i<pContent.size(); i++) {
 					item = pContent.get(i);
 					if (item instanceof R) {
@@ -175,9 +207,9 @@ public class FieldsCombiner {
 		
 
 		private String getInstrText(R run) {
-		List<Object> rContent = run.getContent();
-		Object item = null;
-		Text text = null;
+			List<Object> rContent = run.getContent();
+			Object item = null;
+			Text text = null;
 			for (int i=0; i<rContent.size(); i++) {
 				item = rContent.get(i);
 				if (item instanceof JAXBElement
@@ -185,13 +217,17 @@ public class FieldsCombiner {
 					text = (Text)((JAXBElement)item).getValue();
 					break;
 				}
+				
+				//if (item instanceof Text) {
+				//	text = (Text)item;
+				//}
 			}
 			return (text != null ? text.getValue() : null);
 		}
 
 
 		private Object createFldSimple(String instrText, List<Object> resultList) {
-		CTSimpleField fldSimple = Context.getWmlObjectFactory().createCTSimpleField();
+			CTSimpleField fldSimple = Context.getWmlObjectFactory().createCTSimpleField();
 			fldSimple.setInstr(instrText);
 			if ((resultList != null) && (!resultList.isEmpty())) {
 				fldSimple.getContent().addAll(resultList);
@@ -208,9 +244,9 @@ public class FieldsCombiner {
 
 
 		private STFldCharType getFldCharType(R r) {
-		STFldCharType ret = null;
-		List<Object> rContent = r.getContent();
-		Object item = null;
+			STFldCharType ret = null;
+			List<Object> rContent = r.getContent();
+			Object item = null;
 			if ((rContent != null) && (!rContent.isEmpty())) {
 				for (int i=0; i<rContent.size(); i++) {
 					item = XmlUtils.unwrap(rContent.get(i));

@@ -84,8 +84,9 @@ public class PageNumberInformationCollector {
 
 		@Override
 		public void apply(CTSimpleField element) {
-		String instr = element.getInstr();
-		String fieldType = FormattingSwitchHelper.getFldSimpleName(instr);
+			String instr = element.getInstr();
+			String fieldType = FormattingSwitchHelper.getFldSimpleName(instr);
+			
 			if (PAGE_FIELD_TYPE.equals(fieldType)) {
 				results.setPagePresent(true);
 				results.setPageFormat(extractFormat(instr));

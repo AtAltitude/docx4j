@@ -149,7 +149,7 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 
 		@Override
 		protected Node createPageref(AbstractWmlConversionContext context, Document doc, String bookmarkId) {
-		Element ret = doc.createElementNS(FO_NS, "fo:page-number-citation");
+			Element ret = doc.createElementNS(FO_NS, "fo:page-number-citation");
 			ret.setAttribute("ref-id", bookmarkId);
 			return ret;
 		}

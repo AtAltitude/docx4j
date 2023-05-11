@@ -51,14 +51,14 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 
 	@Override
 	public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
-	String bookmarkId = model.getFldParameters().get(0);
-	Node content = model.getContent();
-	Node literalNode = null;
-	AbstractHyperlinkWriterModel hyperlinkModel = null;
-	DocumentFragment docFrag = null;
-	String textcontent = null;
-	List<String> textcontentitems = null;
-	String textcontentitem = null;
+		String bookmarkId = model.getFldParameters().get(0);
+		Node content = model.getContent();
+		Node literalNode = null;
+		AbstractHyperlinkWriterModel hyperlinkModel = null;
+		DocumentFragment docFrag = null;
+		String textcontent = null;
+		List<String> textcontentitems = null;
+		String textcontentitem = null;
 		if (FormattingSwitchHelper.hasSwitch("\\p", model.getFldParameters())) {
 			textcontent = getTextcontent(content);
 			textcontentitems = splitTextcontent(textcontent);
@@ -96,9 +96,9 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	}
 
 	protected List<String> splitTextcontent(String textcontent) {
-	List<String> ret = null;
-	int startPos = 0;
-	int endPos = -1;
+		List<String> ret = null;
+		int startPos = 0;
+		int endPos = -1;
 		if ((textcontent != null) && (textcontent.length() > 0)) {
 			while ((startPos < textcontent.length()) && 
 				   (!Character.isDigit(textcontent.charAt(startPos))))
@@ -118,12 +118,12 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	}
 
 	protected String getTextcontent(Node root) {
-	Node textNode = findTextNode(root);
+		Node textNode = findTextNode(root);
 		return (textNode != null ? textNode.getNodeValue() : null);
 	}
 
 	protected void setTextcontent(Node root, String text) {
-	Node textNode = findTextNode(root);
+		Node textNode = findTextNode(root);
 		if (textNode != null) {
 			//Apache FOP may remove any leading/trailing spaces if 
 			//a page-number-citation is at the end of a paragraph
@@ -148,9 +148,9 @@ public abstract class AbstractPagerefHandler implements AbstractFldSimpleWriter.
 	 * @return textnode or null
 	 */
 	protected Node findTextNode(Node root) {
-	Node ret = null;
-	NodeList childNodes = null;
-	Node childNode = null;
+		Node ret = null;
+		NodeList childNodes = null;
+		Node childNode = null;
 		switch (root.getNodeType()) {
 			case Node.TEXT_NODE:
 				ret = ((root.getNodeValue() != null) && (root.getNodeValue().length() > 0) ?
