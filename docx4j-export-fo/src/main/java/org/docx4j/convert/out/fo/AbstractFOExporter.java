@@ -152,6 +152,15 @@ public abstract class AbstractFOExporter extends AbstractWmlExporter<FOSettings,
 			log.error("No UTF-8!? " + e.getMessage());
 			foDocument = ((ByteArrayOutputStream)intermediateOutputStream).toString();
 		}
+		
+		/*
+		try {
+			throw new Exception("Hello World");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		*/
+		
 		if (log.isDebugEnabled()) {
 			log.debug(foDocument);
 		}

@@ -21,6 +21,7 @@ package org.docx4j.convert.out.common;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.FileOutputStream;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -58,7 +59,7 @@ public abstract class AbstractXsltExporterDelegate<CS extends AbstractConversion
 	public void process(CS conversionSettings, CC conversionContext, OutputStream outputStream) throws Docx4JException {
 		
 		StartEvent startEvent = new StartEvent( conversionSettings.getOpcPackage(), WellKnownProcessSteps.OUT_XsltExporterDelegate );
-		startEvent.publish();		
+		startEvent.publish();
 		
 		Document domDoc = getSourceDocument(conversionSettings, conversionContext);
 		Templates templates = getTemplates(conversionSettings, conversionContext);
@@ -104,4 +105,69 @@ public abstract class AbstractXsltExporterDelegate<CS extends AbstractConversion
 		return ret;
 	}
 
+	private static class DebuggingOutputStream extends OutputStream {
+		private final OutputStream parent;
+		private OutputStream split;
+		
+		public DebuggingOutputStream(OutputStream stream) {
+			parent = stream;
+			
+			split = null;
+			try {
+				split = new FileOutputStream("./debug.bin");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		private void testString(String str) {
+			//if (str.indexOf("Persian:") >= 0) {
+			//	throw new RuntimeException("give me the fucking stack trace");
+			//}
+		}
+		
+		@Override
+		public void write(int b) throws IOException {
+			//System.out.println("data written: single byte, " + (char)b);
+			parent.write(b);
+			
+			if (split != null) split.write(b);
+		}
+		
+		@Override
+		public void write(byte[] b) throws IOException {
+			final String str = new String(b);
+			//System.out.println("data written: " + b.length + ", " + str);
+			parent.write(b);
+			
+			if (split != null) split.write(b);
+			testString(str);
+		}
+		
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+			final String str = new String(b, off, len);
+			//System.out.println("data written: " + b.length + " bytes; off=" + off + "; len=" + len + "; " + str);
+			parent.write(b, off, len);
+			
+			if (split != null) split.write(b, off, len);
+			testString(str);
+		}
+		
+		@Override
+		public void flush() throws IOException {
+			//System.out.println("stream flushed");
+			parent.flush();
+			
+			if (split != null) split.flush();
+		}
+		
+		@Override
+		public void close() throws IOException {
+			//System.out.println("stream closed");
+			parent.close();
+			
+			if (split != null) split.close();
+		}
+	}
 }

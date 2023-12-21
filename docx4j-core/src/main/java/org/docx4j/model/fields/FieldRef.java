@@ -293,6 +293,9 @@ public class FieldRef {
 	 * @return
 	 */
 	public String getFldName() {
+		//Fix here: Return null if there are no instructions (rather than throwing a fatal IndexOutOfBoundsException)
+		if (instructions.size() == 0) return null;
+		
 		Object o = XmlUtils.unwrap(instructions.get(0));
 		if (o instanceof Text) {
 			return FormattingSwitchHelper.getFldSimpleName( ((Text)o).getValue() );

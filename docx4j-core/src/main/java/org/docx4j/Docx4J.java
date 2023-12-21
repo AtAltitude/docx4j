@@ -706,8 +706,8 @@ public class Docx4J {
 	 *  Convert the document via xsl-fo
 	 */	
 	public static void toFO(FOSettings settings, OutputStream outputStream, int flags) throws Docx4JException {
-		
 		Exporter<FOSettings> exporter = getFOExporter(flags);
+		
 		exporter.export(settings, outputStream);
 	}
 	

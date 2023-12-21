@@ -21,6 +21,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import org.docx4j.fonts.fop.fonts.FontTriplet;
+
 //import com.vdurmont.emoji.EmojiManager;
 
 import java.awt.font.NumericShaper;
@@ -275,9 +280,12 @@ public class RunFontSelector {
     		}
     	} else if (outputType==RunFontActionType.XSL_FO) {
     		String val = getPhysicalFont(fontName);
+			
     		if (val==null) {
     			// Avoid @font-family="", which FOP doesn't like
     			el.setAttribute("font-family", fallbackFont );
+				
+				System.out.println("Unsupported font: '" + fontName + "'; using '" + fallbackFont + "' instead.");
     		} else {	
     			el.setAttribute("font-family", val );
     		}
@@ -924,7 +932,7 @@ public class RunFontSelector {
                 	    			// It is in Segoe UI Symbol, Wing Dings
         							
         							if (gothicSubs!=null && GlyphCheck.hasChar(gothicSubs, c)) {
-	        							vis.fontAction(FONT_WORD_2016_USES);        	    		
+	        							vis.fontAction(FONT_WORD_2016_USES);
 	        						} else {
 	                	    			log.warn("TODO: how to handle char '" + c + "' in range c>='\\u2000' && c<='\\u2EFF'?");        							
 	        						}
@@ -1132,7 +1140,43 @@ public class RunFontSelector {
 
 	
 	private String getPhysicalFont(String fontName) {
+		//Why modify the font at all? Let's just return what we're looking for! ;)
+		//Jokes aside, this band-aid fix *did* work so long as the desired fonts are
+		//installed on the OS. However, this does not catch cases where the font is
+		//not available on the OS and should be replaced with something else.
+		//return fontName;
 		
+		//The issue here previously was that Word font names are the names of the
+		//individual font triplets rather than the name of the overall font - this 
+		//means that a simple getFontMapper().get(fontName) will ignore a large 
+		//portion of available fonts.
+		
+		//We're also no longer using the WML-Package specific font mapper since that
+		//seems to reset to its default set at some point even if the program using
+		//the library adds more fonts. The PhysicalFonts class has static references
+		//and maintains the entries provided by the program.
+		
+		//So, the plan is simple: scan the names of all triplets and return the 
+		//original string if a triplet by the given name is found.
+		
+		//Deprecated, but in this case we don't care and don't have any alternatives
+		//We need a list of all fonts available
+		@SuppressWarnings("deprecation")
+		final Map<String, PhysicalFont> fontMap = PhysicalFonts.getPhysicalFonts();
+		final Set<String> keys = fontMap.keySet();
+		
+		for (final String key : keys) {
+			final PhysicalFont font = fontMap.get(key);
+			final List<FontTriplet> triplets = font.getEmbedFontInfo().getFontTriplets();
+			
+			for (final FontTriplet triplet : triplets) {
+				if (fontName.equalsIgnoreCase(triplet.getName())) {
+					return fontName;
+				}
+			}
+		}
+		
+		//If that failed, fall back on the original way of doing things...
 		log.debug("looking for: " + fontName);
 //		if (log.isDebugEnabled()) {
 //			Throwable t = new Throwable();
@@ -1173,7 +1217,7 @@ public class RunFontSelector {
 			}
 			
 			return pf.getName();
-		}		
+		}
 	}	
 	
 	public interface RunFontCharacterVisitor {
